@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>单身运气测定器 - 32种恋爱人格</title>
-    <!-- 引入 html2canvas 库 -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * {
@@ -65,6 +64,16 @@
             display: inline-block;
             margin-bottom: 15px;
         }
+        .code-badge {
+            background: #2d4a2c;
+            color: #ffd966;
+            font-family: monospace;
+            font-size: 1.2rem;
+            padding: 6px 15px;
+            border-radius: 40px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
         .personality-title {
             background: #2d4a2c;
             color: #fbefc7;
@@ -78,12 +87,20 @@
             background: #ffefcf;
             padding: 20px;
             border-radius: 36px;
-            font-size: 1.1rem;
-            line-height: 1.45;
+            font-size: 1rem;
+            line-height: 1.5;
             margin: 20px 0;
             border-left: 10px solid #ff914d;
             text-align: left;
             font-weight: 500;
+        }
+        .advice {
+            background: #e6d5b8;
+            border-radius: 28px;
+            padding: 12px;
+            font-size: 0.9rem;
+            color: #2c3e2f;
+            margin-top: 15px;
         }
         .options {
             display: flex;
@@ -210,7 +227,6 @@
             color: #b97f10;
             margin-top: 12px;
         }
-        /* 截图预览模态框 */
         .image-preview-modal {
             position: fixed;
             top: 0; left: 0;
@@ -267,60 +283,108 @@
 
 <script>
     // --------------------------------------------------------------
-    // 32种恋爱人格库 (16基础型 × 幸运/霉运)
+    // 32种恋爱人格 - 完整详细版 (包含分类代码 + 幸运/霉运判决书)
     // --------------------------------------------------------------
     const PERSONA_MAP = {
-        "CFOR": { name:"武装相亲机器人", 
-                  luck:"🌟 幸运版：你虽然像面试官，但总能遇到一个受虐狂。",
-                  unluck:"💀 霉运版：你上次相亲把对方问哭了，对方还给了你差评。" },
-        "CFOL": { name:"认真跑偏症",
-                  luck:"🌟 幸运版：你的日程表给对象带来了安全感——虽然你从不遵守。",
-                  unluck:"💀 霉运版：你约会的路上总是遇到修路、堵车、前女友。" },
-        "CFHR": { name:"戏精现实主义",
-                  luck:"🌟 幸运版：你一边要房车一边要浪漫，居然有个富二代看上了你的演技。",
-                  unluck:"💀 霉运版：你的浪漫要求包括‘在雨中奔跑’，结果淋成肺炎。" },
-        "CFHL": { name:"浪漫暴走族",
-                  luck:"🌟 幸运版：你的求婚被发到抖音，意外火了，收到200个应征。",
-                  unluck:"💀 霉运版：你的99朵玫瑰被外卖小哥弄丢，对方以为你根本没来。" },
-        "CXOR": { name:"玄学钢铁侠",
-                  luck:"🌟 幸运版：你算塔罗算出正缘下周出现，结果真的出现了。",
-                  unluck:"💀 霉运版：你算出的正缘是个渣男，塔罗牌说‘请再付50元’。" },
-        "CXOL": { name:"佛系占卜师",
-                  luck:"🌟 幸运版：宇宙的WiFi终于连上了，给你推送了一个同样信星座的。",
-                  unluck:"💀 霉运版：宇宙告诉你对象在火星，建议你买SpaceX船票。" },
-        "CXHR": { name:"疯批神婆/神汉",
-                  luck:"🌟 幸运版：你用血月仪式召唤来的对象，居然是个正常人。",
-                  unluck:"💀 霉运版：你召唤来了一只猫，猫说‘别烦我’。" },
-        "CXHL": { name:"薛定谔的恋爱",
-                  luck:"🌟 幸运版：你同时相信命运和自由意志，结果命运给你送来一个。",
-                  unluck:"💀 霉运版：你还在观察量子态时，对方已经和别人纠缠了。" },
-        "DFOR": { name:"保守分析仪",
-                  luck:"🌟 幸运版：你宅家写脱单计划时，外卖小哥看了你的计划表，感动了。",
-                  unluck:"💀 霉运版：你分析了100个策略，最终结论：还是单身划算。" },
-        "DFOL": { name:"躺平审计师",
-                  luck:"🌟 幸运版：你觉得没人配得上你，然后游戏里认识了一个。",
-                  unluck:"💀 霉运版：你觉得没人配得上你，然后连人机都嫌你菜。" },
-        "DFHR": { name:"内心戏仓库",
-                  luck:"🌟 幸运版：你在心里演了80集，现实中对方主动找你了。",
-                  unluck:"💀 霉运版：你在心里演了80集，对方已经结婚了。" },
-        "DFHL": { name:"悲伤青蛙",
-                  luck:"🌟 幸运版：你边哭边发‘有人爱我吗’，收到三条私信，全是骗子。",
-                  unluck:"💀 霉运版：你哭的第二天，疫情封控结束，但街上没人了。" },
-        "DXOR": { name:"玄学宅神",
-                  luck:"🌟 幸运版：你占卜‘今日宜出门’，出门捡到一个对象。",
-                  unluck:"💀 霉运版：你占卜‘今日不宜出门’，结果对象来敲了门，你没开。" },
-        "DXOL": { name:"虚无主义者",
-                  luck:"🌟 幸运版：爱情只是化学反应，但你遇到了让你疯狂反应的那个。",
-                  unluck:"💀 霉运版：爱情只是化学反应，你的反应方程式配不平。" },
-        "DXHR": { name:"中二契约者",
-                  luck:"🌟 幸运版：你相信宿敌才会打开你的心扉，结果宿敌真的来了。",
-                  unluck:"💀 霉运版：你的宿敌是楼下卖煎饼的大妈，她说‘加蛋吗’。" },
-        "DXHL": { name:"终极摆烂王",
-                  luck:"🌟 幸运版：AI都懒得分析你，因为你是天选锦鲤，躺着也能脱单。",
-                  unluck:"💀 霉运版：AI分析结果：无药可救。但你不在乎，因为你在摆烂中。" }
+        "CFOR": { 
+            name: "武装相亲机器人", 
+            code: "C-F-O-R",
+            luck: "🌟 幸运版：你虽然像面试官一样查户口，但缘分偏偏给你分配了一个喜欢被管理的受虐狂。对方说：“我就喜欢你这种一本正经的样子。” 建议：继续保持你的Excel相亲表，偶尔加个微笑表情。",
+            unluck: "💀 霉运版：你上次相亲把对方问哭了：“你小学三年级成绩单呢？” 对方给了你一颗星差评：“此人无感情，建议回厂重装。” 自救指南：先卸载‘相亲流程SOP’，安装‘人类情感体验包’。"
+        },
+        "CFOL": { 
+            name: "认真跑偏症", 
+            code: "C-F-O-L",
+            luck: "🌟 幸运版：你的日程表虽然从不遵守，但意外给了对方满满的安全感——因为你连迟到都迟到得很有计划。对方说：“你虽然晚了两小时，但还发了一个PPT解释原因，可爱。”",
+            unluck: "💀 霉运版：你约会的路上总是遇到修路、堵车、前女友——而且你还提前三天做了路线规划。结果是：你到的时候餐厅打烊了。 玄学建议：出门前不要看导航，看黄历。"
+        },
+        "CFHR": { 
+            name: "戏精现实主义", 
+            code: "C-F-H-R",
+            luck: "🌟 幸运版：你一边要房车一边要浪漫，居然有个富二代看上了你的演技。他说：“你哭着要玫瑰的样子很真诚。” 建议：以后要包租婆也可以即兴表演一段。",
+            unluck: "💀 霉运版：你的浪漫要求包括‘在雨中奔跑’，结果淋成肺炎住院，对方发来消息：“多喝热水”，然后拉黑了你。 医嘱：下次浪漫可以选‘在暖气片旁吃火锅’。"
+        },
+        "CFHL": { 
+            name: "浪漫暴走族", 
+            code: "C-F-H-L",
+            luck: "🌟 幸运版：你的99朵玫瑰求婚视频被发到抖音，意外火了，收到200个应征。其中一人说：“我就喜欢你这种疯批气质。”",
+            unluck: "💀 霉运版：你的99朵玫瑰被外卖小哥弄丢，对方以为你根本没来，转头和别人在一起了。 暴击结论：浪漫需要物流保障，建议下次用无人机空投。"
+        },
+        "CXOR": { 
+            name: "玄学钢铁侠", 
+            code: "C-X-O-R",
+            luck: "🌟 幸运版：你算塔罗算出正缘下周出现，结果真的出现了——而且对方也带着塔罗牌。你们第一次约会互相对着算八字，算了一整晚。",
+            unluck: "💀 霉运版：你算出的正缘是个渣男，塔罗牌说‘请再付50元买水晶能量’… 你付了，然后被骗走5000元。 警告：塔罗牌不会让你扫二维码。"
+        },
+        "CXOL": { 
+            name: "佛系占卜师", 
+            code: "C-X-O-L",
+            luck: "🌟 幸运版：宇宙的WiFi终于连上了，给你推送了一个同样信星座的。你们第一次约会就对着星盘吐槽前任，气氛异常融洽。",
+            unluck: "💀 霉运版：宇宙告诉你对象在火星，建议你买SpaceX船票。你打开了众筹页面，发现目标金额是10亿。 摆烂方案：不如找个地球人将就。"
+        },
+        "CXHR": { 
+            name: "疯批神婆/神汉", 
+            code: "C-X-H-R",
+            luck: "🌟 幸运版：你用血月仪式召唤来的对象，居然是个正常人。他默默收起你的水晶球说：“虽然你是疯子，但我喜欢。”",
+            unluck: "💀 霉运版：你召唤来了一只猫，猫说‘别烦我’，然后尿在你的祭坛上。 后续：你成了猫奴，对象依然没有。"
+        },
+        "CXHL": { 
+            name: "薛定谔的恋爱", 
+            code: "C-X-H-L",
+            luck: "🌟 幸运版：你同时相信命运和自由意志，结果命运给你送来一个既信命又信奋斗的人。你们每天辩论，越吵越爱。",
+            unluck: "💀 霉运版：你还在观察量子态时，对方已经和别人纠缠了。 物理老师评语：观测动作太慢，粒子已坍缩。"
+        },
+        "DFOR": { 
+            name: "保守分析仪", 
+            code: "D-F-O-R",
+            luck: "🌟 幸运版：你宅家写脱单计划时，外卖小哥看了你的计划表，感动了。他说：“你这方案写得好，我妹妹也是数据分析师，要不认识一下？”",
+            unluck: "💀 霉运版：你分析了100个策略，最终结论：还是单身划算。于是你心安理得地打游戏去了。 自我安慰：至少省了约会经费。"
+        },
+        "DFOL": { 
+            name: "躺平审计师", 
+            code: "D-F-O-L",
+            luck: "🌟 幸运版：你觉得没人配得上你，然后游戏里认识了一个同样挑剔的人。你们互相对账后发现彼此资产相当，于是决定凑合过。",
+            unluck: "💀 霉运版：你觉得没人配得上你，然后连人机都嫌你菜。系统提示：“您的恋爱段位：青铜负星。”"
+        },
+        "DFHR": { 
+            name: "内心戏仓库", 
+            code: "D-F-H-R",
+            luck: "🌟 幸运版：你在心里演了80集偶像剧，现实中对方居然主动找你了，说：“我注意你很久了，你发呆的样子很可爱。”",
+            unluck: "💀 霉运版：你在心里演了80集，对方已经结婚了。你作为群演都没上台。 导演点评：剧本很好，但主角没来。"
+        },
+        "DFHL": { 
+            name: "悲伤青蛙", 
+            code: "D-F-H-L",
+            luck: "🌟 幸运版：你边哭边发‘有人爱我吗’，收到三条私信，全是骗子。但其中一个骗子演技太差被你识破，你们反而成了朋友（然后骗子给你介绍了真对象）。",
+            unluck: "💀 霉运版：你哭的第二天，疫情封控结束，但街上没人了。你对着空旷的马路大喊“有没有人”，回音说“没有”。"
+        },
+        "DXOR": { 
+            name: "玄学宅神", 
+            code: "D-X-O-R",
+            luck: "🌟 幸运版：你占卜‘今日宜出门’，出门捡到一个对象。对方也在捡东西，你们因为同时弯腰撞到头，然后一起去医院，再然后… 成了。",
+            unluck: "💀 霉运版：你占卜‘今日不宜出门’，结果对象来敲了门，你没开。第二天你发现门口有一封信：“我注意你很久了，但昨天之后我搬家了。”"
+        },
+        "DXOL": { 
+            name: "虚无主义者", 
+            code: "D-X-O-L",
+            luck: "🌟 幸运版：爱情只是化学反应，但你遇到了让你疯狂反应的那个。你们在一起后每天做实验（厨房爆炸警告），但很快乐。",
+            unluck: "💀 霉运版：爱情只是化学反应，你的反应方程式配不平。你尝试加催化剂（酒精），结果只是一个人喝醉了。"
+        },
+        "DXHR": { 
+            name: "中二契约者", 
+            code: "D-X-H-R",
+            luck: "🌟 幸运版：你相信宿敌才会打开你的心扉，结果宿敌真的来了——是隔壁公司的竞争对手，你们在商业间谍战中产生爱情。",
+            unluck: "💀 霉运版：你的宿敌是楼下卖煎饼的大妈，她说‘加蛋吗’。你犹豫了一下，她说‘不加蛋滚’… 你失去了爱情，也失去了煎饼。"
+        },
+        "DXHL": { 
+            name: "终极摆烂王", 
+            code: "D-X-H-L",
+            luck: "🌟 幸运版：AI都懒得分析你，因为你是天选锦鲤，躺着也能脱单。对方说：“我喜欢你这种懒懒的气质。” 你回复：“那你去给我倒杯水。” 对方居然去了。",
+            unluck: "💀 霉运版：AI分析结果：无药可救。但你不在乎，因为你在摆烂中。某天你饿死在出租屋，最后一条动态：“外卖都不愿给我送，爱情算什么？”"
+        }
     };
 
-    // 题库（与之前相同）
+    // 题库保持不变（略，同上一个版本）
     const QUESTIONS = [
         { id:1, dim:"CD", text:"发现心仪的同事也单身，你会？", 
           opts:[{txt:"直接约吃饭", val:"C", anger:false},{txt:"暗中观察，期待偶遇", val:"D", anger:false},{txt:"注册小号偷偷关注他的微博", val:"D", anger:true}] },
@@ -364,14 +428,6 @@
         answeredIds: [],
         questionOrder: []
     };
-
-    function shuffle(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
 
     function initGame() {
         state = {
@@ -474,7 +530,7 @@
         };
     }
 
-    let currentResult = { personaKey: null, persona: null, isLuck: false, finalJudgment: "", titleSuffix: "" };
+    let currentResult = { personaKey: null, persona: null, isLuck: false, finalJudgment: "", titleSuffix: "", code: "" };
 
     function finishTest() {
         let cd = state.scores.C >= state.scores.D ? 'C' : 'D';
@@ -488,22 +544,21 @@
         const finalJudgment = isLuck ? persona.luck : persona.unluck;
         const titleSuffix = isLuck ? "✨ 幸运版 ✨" : "☠️ 霉运版 ☠️";
         
-        // 保存结果供截图使用
-        currentResult = { personaKey: baseKey, persona, isLuck, finalJudgment, titleSuffix };
+        currentResult = { personaKey: baseKey, persona, isLuck, finalJudgment, titleSuffix, code: persona.code };
 
         const container = document.getElementById("mainContent");
-        // 注意：这里包裹一个 div 用于截图，id="captureArea"
         container.innerHTML = `
             <div class="result-area" id="captureArea">
                 <div class="badge">🎭 你的恋爱人格</div>
-                <div class="personality-title">${persona.name}</div>
+                <div class="code-badge">📟 代码：${persona.code}</div>
+                <div class="personality-title">${persona.name} ${titleSuffix}</div>
                 <div class="judgment">${finalJudgment}</div>
                 <div style="font-size:0.9rem; background:#f2e2ca; border-radius:20px; padding:8px; margin:10px 0;">
                     霉运值: ${state.luckScore} | 暴躁触发: ${state.angerFlag ? '是⚠️' : '否'}
                 </div>
                 <div class="guide">
-                    📢 关注公众号「单身自救研究所」<br>
-                    回复【脱单】领取《反PUA话术+沙雕表情包》
+                    📢 关注公众号「胡咧咧大王」<br>
+                    回复【脱单】领取《脱单秘笈-终极版》
                 </div>
             </div>
             <div style="margin-top: 20px;">
@@ -523,17 +578,16 @@
     async function generateShareImage() {
         const element = document.getElementById('captureArea');
         if (!element) return;
-        // 显示加载提示（可选）
         const btn = document.getElementById('shareBtn');
         const originalText = btn.innerText;
         btn.innerText = '生成中...';
         btn.disabled = true;
         try {
             const canvas = await html2canvas(element, {
-                scale: 2,            // 高清图
+                scale: 2,
                 backgroundColor: '#fff6e8',
                 logging: false,
-                useCORS: false       // 我们没有跨域图片
+                useCORS: false
             });
             const imageData = canvas.toDataURL('image/png');
             showImagePreview(imageData);
@@ -563,7 +617,6 @@
         modal.querySelector('.close-preview').addEventListener('click', closeModal);
         modal.querySelector('#closePreviewBtn').addEventListener('click', closeModal);
         modal.querySelector('#saveImageBtn').addEventListener('click', () => {
-            // 对于移动端，长按即可保存，这里提供下载链接（PC有效）
             const link = document.createElement('a');
             link.download = 'singleton_result.png';
             link.href = imageData;
