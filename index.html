@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>单身运气测定器 - 32种恋爱人格</title>
+    <!-- 引入 html2canvas 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -141,12 +143,24 @@
             border-radius: 60px;
             font-weight: bold;
             font-size: 1rem;
-            margin-top: 20px;
+            margin: 10px 8px;
             cursor: pointer;
             display: inline-block;
         }
-        .btn-reset:active {
-            background: #1f3220;
+        .btn-share {
+            background: #ff914d;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin: 10px 8px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .btn-reset:active, .btn-share:active {
+            transform: scale(0.97);
         }
         .anger-modal {
             position: fixed;
@@ -191,26 +205,55 @@
             padding: 16px;
             color: #b48c54;
         }
-        button {
-            background: none;
-            border: none;
-        }
         .share-tip {
             font-size: 0.75rem;
             color: #b97f10;
             margin-top: 12px;
         }
+        /* 截图预览模态框 */
+        .image-preview-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            flex-direction: column;
+        }
+        .preview-image {
+            max-width: 90%;
+            max-height: 70%;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+        .preview-actions {
+            margin-top: 20px;
+        }
+        .preview-actions button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border-radius: 40px;
+            background: #ff914d;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+        .close-preview {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            text-align: center;
+            line-height: 40px;
+            cursor: pointer;
+        }
     </style>
-<script>
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?你的专属ID";
-  var s = document.getElementsByTagName("script")[0]; 
-  s.parentNode.insertBefore(hm, s);
-})();
-</script>
-    
 </head>
 <body>
 <div class="container" id="app">
@@ -225,7 +268,6 @@ var _hmt = _hmt || [];
 <script>
     // --------------------------------------------------------------
     // 32种恋爱人格库 (16基础型 × 幸运/霉运)
-    // 基础维度顺序: C/D, F/X, O/H, R/L
     // --------------------------------------------------------------
     const PERSONA_MAP = {
         "CFOR": { name:"武装相亲机器人", 
@@ -278,7 +320,7 @@ var _hmt = _hmt || [];
                   unluck:"💀 霉运版：AI分析结果：无药可救。但你不在乎，因为你在摆烂中。" }
     };
 
-    // ----------------------------- 题库（包含荒唐选项触发暴躁）--------------------------------
+    // 题库（与之前相同）
     const QUESTIONS = [
         { id:1, dim:"CD", text:"发现心仪的同事也单身，你会？", 
           opts:[{txt:"直接约吃饭", val:"C", anger:false},{txt:"暗中观察，期待偶遇", val:"D", anger:false},{txt:"注册小号偷偷关注他的微博", val:"D", anger:true}] },
@@ -296,7 +338,6 @@ var _hmt = _hmt || [];
           opts:[{txt:"直接说谢谢，但不用", val:"O", anger:false},{txt:"感动到哭，夸他用心", val:"H", anger:false},{txt:"发朋友圈吐槽直男审美", val:"H", anger:true}] },
         { id:8, dim:"RL", text:"周末约会安排？", 
           opts:[{txt:"提前两天确认时间地点", val:"R", anger:false},{txt:"当天随性出发", val:"L", anger:false},{txt:"宅家打游戏，说下次一定", val:"L", anger:true}] },
-        // 幸运值题 (运气测量)
         { id:9, dim:"LUCK", text:"你曾经捡到过钱吗？", 
           opts:[{txt:"捡过，还给了失主", val:"luck", anger:false, luckVal:1},{txt:"捡过，自己花了", val:"none", anger:false, luckVal:0},{txt:"丢过钱，从没捡到", val:"unluck", anger:false, luckVal:-2}] },
         { id:10, dim:"LUCK", text:"抽卡/抽奖的手气？", 
@@ -305,7 +346,6 @@ var _hmt = _hmt || [];
           opts:[{txt:"从没遇到过", val:"luck", anger:false, luckVal:1},{txt:"对方放鸽子", val:"unluck", anger:false, luckVal:-1},{txt:"对方带着现男友来赴约", val:"unluck", anger:true, luckVal:-3}] }
     ];
 
-    // 暴躁文案库
     const ANGER_TEXTS = [
         "🤬 你确定你是在找对象，不是在招一个全天候保姆？系统建议你下载一个‘孤寡青蛙’App。",
         "🤯 检测到你的择偶标准包含：肤白貌美/年入百万/会修电脑/热爱小动物/父母双亡——这种人只存在于你的梦里。",
@@ -316,20 +356,15 @@ var _hmt = _hmt || [];
         "⚡ 你选的答案让AI CPU烧了，鉴定结果：无药可救，下一位～"
     ];
 
-    // 状态管理
     let state = {
-        step: 0,               // 当前第几题 (0-index)
+        step: 0,
         scores: { C:0, D:0, F:0, X:0, O:0, H:0, R:0, L:0 },
         luckScore: 0,
-        angerFlag: false,     // 是否已触发暴躁
+        angerFlag: false,
         answeredIds: [],
-        questionOrder: [],     // 题目顺序（打乱但有逻辑，这里简单固定顺序）
-        extraAnger: false
+        questionOrder: []
     };
 
-    let currentQuestions = [...QUESTIONS];  // 可动态扩展
-
-    // 随机打乱数组 (不影响维度平衡，简单乱序)
     function shuffle(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -339,19 +374,16 @@ var _hmt = _hmt || [];
     }
 
     function initGame() {
-        // 重置状态
         state = {
             step: 0,
             scores: { C:0, D:0, F:0, X:0, O:0, H:0, R:0, L:0 },
             luckScore: 0,
             angerFlag: false,
             answeredIds: [],
-            questionOrder: [],
-            extraAnger: false
+            questionOrder: []
         };
-        // 题目顺序：先常规维度（前8题固定顺序方便调试，也可以乱序），幸运题放最后
-        let normal = currentQuestions.filter(q => q.dim !== "LUCK");
-        let luck = currentQuestions.filter(q => q.dim === "LUCK");
+        let normal = QUESTIONS.filter(q => q.dim !== "LUCK");
+        let luck = QUESTIONS.filter(q => q.dim === "LUCK");
         state.questionOrder = [...normal, ...luck];
         renderQuestion();
     }
@@ -384,7 +416,6 @@ var _hmt = _hmt || [];
             </div>
         `;
         container.innerHTML = html;
-        // 绑定选项事件
         document.querySelectorAll('.option-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const val = btn.dataset.val;
@@ -396,25 +427,20 @@ var _hmt = _hmt || [];
     }
 
     function handleAnswer(val, isAngerTrigger, luckVal) {
-        // 处理维度得分
         const q = state.questionOrder[state.step];
         if (q.dim !== "LUCK") {
-            // 常规维度：val 是 C/D/F/X/O/H/R/L 之一
             if (state.scores.hasOwnProperty(val)) {
                 state.scores[val] += 1;
             }
         } else {
-            // 幸运题
             state.luckScore += luckVal;
         }
 
-        // 处理荒唐触发暴躁（本次选项直接暴躁）
         let showAnger = false;
         if (isAngerTrigger && !state.angerFlag) {
             showAnger = true;
             state.angerFlag = true;
         }
-        // 随机暴躁（5%概率且没触发过）
         if (!state.angerFlag && !showAnger && Math.random() < 0.05) {
             showAnger = true;
             state.angerFlag = true;
@@ -448,24 +474,27 @@ var _hmt = _hmt || [];
         };
     }
 
+    let currentResult = { personaKey: null, persona: null, isLuck: false, finalJudgment: "", titleSuffix: "" };
+
     function finishTest() {
-        // 计算基础人格类型
         let cd = state.scores.C >= state.scores.D ? 'C' : 'D';
         let fx = state.scores.F >= state.scores.X ? 'F' : 'X';
         let oh = state.scores.O >= state.scores.H ? 'O' : 'H';
         let rl = state.scores.R >= state.scores.L ? 'R' : 'L';
         let baseKey = cd+fx+oh+rl;
         const persona = PERSONA_MAP[baseKey] || PERSONA_MAP["DFHL"];
-        // 根据幸运值决定幸运版还是霉运版（阈值0以上为幸运，<=0为霉运，并且如果触发了暴躁强制霉运）
         let isLuck = (state.luckScore > 0) && !state.angerFlag;
         if(state.angerFlag) isLuck = false;
         const finalJudgment = isLuck ? persona.luck : persona.unluck;
         const titleSuffix = isLuck ? "✨ 幸运版 ✨" : "☠️ 霉运版 ☠️";
         
-        // 生成结果HTML
+        // 保存结果供截图使用
+        currentResult = { personaKey: baseKey, persona, isLuck, finalJudgment, titleSuffix };
+
         const container = document.getElementById("mainContent");
+        // 注意：这里包裹一个 div 用于截图，id="captureArea"
         container.innerHTML = `
-            <div class="result-area">
+            <div class="result-area" id="captureArea">
                 <div class="badge">🎭 你的恋爱人格</div>
                 <div class="personality-title">${persona.name}</div>
                 <div class="judgment">${finalJudgment}</div>
@@ -476,16 +505,72 @@ var _hmt = _hmt || [];
                     📢 关注公众号「单身自救研究所」<br>
                     回复【脱单】领取《反PUA话术+沙雕表情包》
                 </div>
-                <button class="btn-reset" id="resetBtn">重新测试</button>
-                <div class="share-tip">💡 点击右上角分享给朋友，看看谁是终极摆烂王</div>
             </div>
+            <div style="margin-top: 20px;">
+                <button class="btn-share" id="shareBtn">📸 生成分享图片</button>
+                <button class="btn-reset" id="resetBtn">重新测试</button>
+            </div>
+            <div class="share-tip">💡 点击右上角分享给朋友，看看谁是终极摆烂王</div>
         `;
         document.getElementById('resetBtn')?.addEventListener('click', () => {
             initGame();
         });
+        document.getElementById('shareBtn')?.addEventListener('click', () => {
+            generateShareImage();
+        });
     }
 
-    // 启动
+    async function generateShareImage() {
+        const element = document.getElementById('captureArea');
+        if (!element) return;
+        // 显示加载提示（可选）
+        const btn = document.getElementById('shareBtn');
+        const originalText = btn.innerText;
+        btn.innerText = '生成中...';
+        btn.disabled = true;
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 2,            // 高清图
+                backgroundColor: '#fff6e8',
+                logging: false,
+                useCORS: false       // 我们没有跨域图片
+            });
+            const imageData = canvas.toDataURL('image/png');
+            showImagePreview(imageData);
+        } catch (err) {
+            alert('生成失败，请重试');
+            console.error(err);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    function showImagePreview(imageData) {
+        const modal = document.createElement('div');
+        modal.className = 'image-preview-modal';
+        modal.innerHTML = `
+            <div class="close-preview">✕</div>
+            <img src="${imageData}" class="preview-image" alt="分享图片" />
+            <div class="preview-actions">
+                <button id="saveImageBtn">保存图片</button>
+                <button id="closePreviewBtn">关闭</button>
+            </div>
+            <div style="color:white; margin-top:15px; font-size:14px;">💡 长按图片保存到相册，分享朋友圈</div>
+        `;
+        document.body.appendChild(modal);
+        const closeModal = () => modal.remove();
+        modal.querySelector('.close-preview').addEventListener('click', closeModal);
+        modal.querySelector('#closePreviewBtn').addEventListener('click', closeModal);
+        modal.querySelector('#saveImageBtn').addEventListener('click', () => {
+            // 对于移动端，长按即可保存，这里提供下载链接（PC有效）
+            const link = document.createElement('a');
+            link.download = 'singleton_result.png';
+            link.href = imageData;
+            link.click();
+        });
+    }
+
     initGame();
 </script>
 </body>
