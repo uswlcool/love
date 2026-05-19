@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>单身运气测定器 - 32种恋爱人格</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: linear-gradient(145deg, #1f2a3a 0%, #0e1722 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: system-ui, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 16px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #fff6e8;
+            border-radius: 48px 32px 56px 32px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: #ff914d;
+            padding: 20px 20px 16px;
+            text-align: center;
+            color: #2d1b0c;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.9rem;
+            letter-spacing: 2px;
+            font-weight: 800;
+        }
+        .header p {
+            margin: 6px 0 0;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        .content {
+            padding: 24px 20px 32px;
+        }
+        .question-area, .result-area {
+            display: block;
+        }
+        .result-area {
+            text-align: center;
+        }
+        .badge {
+            background: #f3dfb5;
+            border-radius: 60px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        .personality-title {
+            background: #2d4a2c;
+            color: #fbefc7;
+            padding: 12px;
+            border-radius: 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .judgment {
+            background: #ffefcf;
+            padding: 20px;
+            border-radius: 36px;
+            font-size: 1.1rem;
+            line-height: 1.45;
+            margin: 20px 0;
+            border-left: 10px solid #ff914d;
+            text-align: left;
+            font-weight: 500;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 28px 0 20px;
+        }
+        .option-btn {
+            background: white;
+            border: 2px solid #ecc897;
+            border-radius: 100px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.05s linear;
+            color: #3b2a1f;
+        }
+        .option-btn:active {
+            transform: scale(0.97);
+            background: #ffe0b5;
+        }
+        .option-prefix {
+            background: #ff914d;
+            width: 32px;
+            height: 32px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        .progress {
+            background: #e9cfaa;
+            border-radius: 30px;
+            height: 8px;
+            margin: 10px 0 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: #ff914d;
+            width: 0%;
+            height: 100%;
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .btn-reset {
+            background: #2d4a2c;
+            border: none;
+            color: #fbefc7;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 20px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .btn-reset:active {
+            background: #1f3220;
+        }
+        .anger-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .anger-card {
+            background: #fff3e0;
+            max-width: 280px;
+            width: 80%;
+            padding: 24px;
+            border-radius: 48px;
+            text-align: center;
+            border: 4px solid #ff4d4d;
+            box-shadow: 0 10px 25px black;
+        }
+        .anger-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 12px 0;
+            color: #b32d00;
+        }
+        .hide {
+            display: none;
+        }
+        .guide {
+            background: #f4e2c6;
+            border-radius: 28px;
+            padding: 16px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 16px;
+            color: #b48c54;
+        }
+        button {
+            background: none;
+            border: none;
+        }
+        .share-tip {
+            font-size: 0.75rem;
+            color: #b97f10;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <div class="header">
+        <h1>⚡ 单身运气测定器 ⚡</h1>
+        <p>测测你的恋爱人格 & 霉运指数</p>
+    </div>
+    <div class="content" id="mainContent"></div>
+    <footer>⚠️ 纯属娱乐 · 暴躁预警 · 无厘头研究</footer>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // 32种恋爱人格库 (16基础型 × 幸运/霉运)
+    // 基础维度顺序: C/D, F/X, O/H, R/L
+    // --------------------------------------------------------------
+    const PERSONA_MAP = {
+        "CFOR": { name:"武装相亲机器人", 
+                  luck:"🌟 幸运版：你虽然像面试官，但总能遇到一个受虐狂。",
+                  unluck:"💀 霉运版：你上次相亲把对方问哭了，对方还给了你差评。" },
+        "CFOL": { name:"认真跑偏症",
+                  luck:"🌟 幸运版：你的日程表给对象带来了安全感——虽然你从不遵守。",
+                  unluck:"💀 霉运版：你约会的路上总是遇到修路、堵车、前女友。" },
+        "CFHR": { name:"戏精现实主义",
+                  luck:"🌟 幸运版：你一边要房车一边要浪漫，居然有个富二代看上了你的演技。",
+                  unluck:"💀 霉运版：你的浪漫要求包括‘在雨中奔跑’，结果淋成肺炎。" },
+        "CFHL": { name:"浪漫暴走族",
+                  luck:"🌟 幸运版：你的求婚被发到抖音，意外火了，收到200个应征。",
+                  unluck:"💀 霉运版：你的99朵玫瑰被外卖小哥弄丢，对方以为你根本没来。" },
+        "CXOR": { name:"玄学钢铁侠",
+                  luck:"🌟 幸运版：你算塔罗算出正缘下周出现，结果真的出现了。",
+                  unluck:"💀 霉运版：你算出的正缘是个渣男，塔罗牌说‘请再付50元’。" },
+        "CXOL": { name:"佛系占卜师",
+                  luck:"🌟 幸运版：宇宙的WiFi终于连上了，给你推送了一个同样信星座的。",
+                  unluck:"💀 霉运版：宇宙告诉你对象在火星，建议你买SpaceX船票。" },
+        "CXHR": { name:"疯批神婆/神汉",
+                  luck:"🌟 幸运版：你用血月仪式召唤来的对象，居然是个正常人。",
+                  unluck:"💀 霉运版：你召唤来了一只猫，猫说‘别烦我’。" },
+        "CXHL": { name:"薛定谔的恋爱",
+                  luck:"🌟 幸运版：你同时相信命运和自由意志，结果命运给你送来一个。",
+                  unluck:"💀 霉运版：你还在观察量子态时，对方已经和别人纠缠了。" },
+        "DFOR": { name:"保守分析仪",
+                  luck:"🌟 幸运版：你宅家写脱单计划时，外卖小哥看了你的计划表，感动了。",
+                  unluck:"💀 霉运版：你分析了100个策略，最终结论：还是单身划算。" },
+        "DFOL": { name:"躺平审计师",
+                  luck:"🌟 幸运版：你觉得没人配得上你，然后游戏里认识了一个。",
+                  unluck:"💀 霉运版：你觉得没人配得上你，然后连人机都嫌你菜。" },
+        "DFHR": { name:"内心戏仓库",
+                  luck:"🌟 幸运版：你在心里演了80集，现实中对方主动找你了。",
+                  unluck:"💀 霉运版：你在心里演了80集，对方已经结婚了。" },
+        "DFHL": { name:"悲伤青蛙",
+                  luck:"🌟 幸运版：你边哭边发‘有人爱我吗’，收到三条私信，全是骗子。",
+                  unluck:"💀 霉运版：你哭的第二天，疫情封控结束，但街上没人了。" },
+        "DXOR": { name:"玄学宅神",
+                  luck:"🌟 幸运版：你占卜‘今日宜出门’，出门捡到一个对象。",
+                  unluck:"💀 霉运版：你占卜‘今日不宜出门’，结果对象来敲了门，你没开。" },
+        "DXOL": { name:"虚无主义者",
+                  luck:"🌟 幸运版：爱情只是化学反应，但你遇到了让你疯狂反应的那个。",
+                  unluck:"💀 霉运版：爱情只是化学反应，你的反应方程式配不平。" },
+        "DXHR": { name:"中二契约者",
+                  luck:"🌟 幸运版：你相信宿敌才会打开你的心扉，结果宿敌真的来了。",
+                  unluck:"💀 霉运版：你的宿敌是楼下卖煎饼的大妈，她说‘加蛋吗’。" },
+        "DXHL": { name:"终极摆烂王",
+                  luck:"🌟 幸运版：AI都懒得分析你，因为你是天选锦鲤，躺着也能脱单。",
+                  unluck:"💀 霉运版：AI分析结果：无药可救。但你不在乎，因为你在摆烂中。" }
+    };
+
+    // ----------------------------- 题库（包含荒唐选项触发暴躁）--------------------------------
+    const QUESTIONS = [
+        { id:1, dim:"CD", text:"发现心仪的同事也单身，你会？", 
+          opts:[{txt:"直接约吃饭", val:"C", anger:false},{txt:"暗中观察，期待偶遇", val:"D", anger:false},{txt:"注册小号偷偷关注他的微博", val:"D", anger:true}] },
+        { id:2, dim:"FX", text:"你认为感情长久最取决于？", 
+          opts:[{txt:"三观/经济/家庭背景", val:"F", anger:false},{txt:"星座/血型/生辰八字", val:"X", anger:false},{txt:"对方会不会做酸菜鱼", val:"X", anger:true}] },
+        { id:3, dim:"OH", text:"吵架后你通常会？", 
+          opts:[{txt:"冷静分析对错，提出方案", val:"O", anger:false},{txt:"哭诉'你不爱我了'，拉黑", val:"H", anger:false},{txt:"发仅对方可见的朋友圈配阴天", val:"H", anger:true}] },
+        { id:4, dim:"RL", text:"计划一次浪漫旅行，你会？", 
+          opts:[{txt:"提前三月订票做Excel攻略", val:"R", anger:false},{txt:"周五下班说'周末去海边吧'", val:"L", anger:false},{txt:"旅行？我在家看旅游频道就好", val:"L", anger:true}] },
+        { id:5, dim:"CD", text:"遇到喜欢的人第一反应？", 
+          opts:[{txt:"冲上去要微信", val:"C", anger:false},{txt:"先打听情报再接近", val:"D", anger:false},{txt:"回家先算一下星座合盘", val:"D", anger:true}] },
+        { id:6, dim:"FX", text:"约会地点你会选？", 
+          opts:[{txt:"评分4.8以上的餐厅", val:"F", anger:false},{txt:"塔罗牌推荐的咖啡馆", val:"X", anger:false},{txt:"我家，我下面给你吃", val:"X", anger:true}] },
+        { id:7, dim:"OH", text:"收到礼物不喜欢，你会？", 
+          opts:[{txt:"直接说谢谢，但不用", val:"O", anger:false},{txt:"感动到哭，夸他用心", val:"H", anger:false},{txt:"发朋友圈吐槽直男审美", val:"H", anger:true}] },
+        { id:8, dim:"RL", text:"周末约会安排？", 
+          opts:[{txt:"提前两天确认时间地点", val:"R", anger:false},{txt:"当天随性出发", val:"L", anger:false},{txt:"宅家打游戏，说下次一定", val:"L", anger:true}] },
+        // 幸运值题 (运气测量)
+        { id:9, dim:"LUCK", text:"你曾经捡到过钱吗？", 
+          opts:[{txt:"捡过，还给了失主", val:"luck", anger:false, luckVal:1},{txt:"捡过，自己花了", val:"none", anger:false, luckVal:0},{txt:"丢过钱，从没捡到", val:"unluck", anger:false, luckVal:-2}] },
+        { id:10, dim:"LUCK", text:"抽卡/抽奖的手气？", 
+          opts:[{txt:"经常出SSR", val:"luck", anger:false, luckVal:2},{txt:"一般般", val:"none", anger:false, luckVal:0},{txt:"非酋本酋", val:"unluck", anger:false, luckVal:-2}] },
+        { id:11, dim:"LUCK", text:"你遇到过最离谱的约会事故？", 
+          opts:[{txt:"从没遇到过", val:"luck", anger:false, luckVal:1},{txt:"对方放鸽子", val:"unluck", anger:false, luckVal:-1},{txt:"对方带着现男友来赴约", val:"unluck", anger:true, luckVal:-3}] }
+    ];
+
+    // 暴躁文案库
+    const ANGER_TEXTS = [
+        "🤬 你确定你是在找对象，不是在招一个全天候保姆？系统建议你下载一个‘孤寡青蛙’App。",
+        "🤯 检测到你的择偶标准包含：肤白貌美/年入百万/会修电脑/热爱小动物/父母双亡——这种人只存在于你的梦里。",
+        "😤 你的恋爱观像极了‘我要求对方身高180+，但我自己150还穿内增高’——系统已沉默。",
+        "💢 你已经选了5次‘看缘分’，缘分说：我和你不熟。",
+        "👹 你这种情况，我们一般建议——去庙里求个签，然后认命吧。",
+        "💀 答题器已暴躁：你每一题都在‘随便’，那你单身也是‘随便’的结果咯！",
+        "⚡ 你选的答案让AI CPU烧了，鉴定结果：无药可救，下一位～"
+    ];
+
+    // 状态管理
+    let state = {
+        step: 0,               // 当前第几题 (0-index)
+        scores: { C:0, D:0, F:0, X:0, O:0, H:0, R:0, L:0 },
+        luckScore: 0,
+        angerFlag: false,     // 是否已触发暴躁
+        answeredIds: [],
+        questionOrder: [],     // 题目顺序（打乱但有逻辑，这里简单固定顺序）
+        extraAnger: false
+    };
+
+    let currentQuestions = [...QUESTIONS];  // 可动态扩展
+
+    // 随机打乱数组 (不影响维度平衡，简单乱序)
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function initGame() {
+        // 重置状态
+        state = {
+            step: 0,
+            scores: { C:0, D:0, F:0, X:0, O:0, H:0, R:0, L:0 },
+            luckScore: 0,
+            angerFlag: false,
+            answeredIds: [],
+            questionOrder: [],
+            extraAnger: false
+        };
+        // 题目顺序：先常规维度（前8题固定顺序方便调试，也可以乱序），幸运题放最后
+        let normal = currentQuestions.filter(q => q.dim !== "LUCK");
+        let luck = currentQuestions.filter(q => q.dim === "LUCK");
+        state.questionOrder = [...normal, ...luck];
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const container = document.getElementById("mainContent");
+        if (!container) return;
+        if (state.step >= state.questionOrder.length) {
+            finishTest();
+            return;
+        }
+        const q = state.questionOrder[state.step];
+        const progressPercent = (state.step / state.questionOrder.length) * 100;
+        let optionsHtml = "";
+        q.opts.forEach((opt, idx) => {
+            const prefix = String.fromCharCode(65+idx);
+            optionsHtml += `<div class="option-btn" data-val="${opt.val}" data-anger="${opt.anger}" data-luckval="${opt.luckVal || 0}">
+                                <span class="option-prefix">${prefix}</span>
+                                <span>${opt.txt}</span>
+                            </div>`;
+        });
+        const html = `
+            <div class="question-area">
+                <div class="progress"><div class="progress-bar" style="width:${progressPercent}%;"></div></div>
+                <div class="badge">第${state.step+1} / ${state.questionOrder.length} 题</div>
+                <div style="font-size:1.4rem; font-weight:bold; margin:15px 0;">${q.text}</div>
+                <div class="options" id="optionsArea">
+                    ${optionsHtml}
+                </div>
+            </div>
+        `;
+        container.innerHTML = html;
+        // 绑定选项事件
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const val = btn.dataset.val;
+                const isAnger = btn.dataset.anger === 'true';
+                const luckVal = parseInt(btn.dataset.luckval) || 0;
+                handleAnswer(val, isAnger, luckVal);
+            });
+        });
+    }
+
+    function handleAnswer(val, isAngerTrigger, luckVal) {
+        // 处理维度得分
+        const q = state.questionOrder[state.step];
+        if (q.dim !== "LUCK") {
+            // 常规维度：val 是 C/D/F/X/O/H/R/L 之一
+            if (state.scores.hasOwnProperty(val)) {
+                state.scores[val] += 1;
+            }
+        } else {
+            // 幸运题
+            state.luckScore += luckVal;
+        }
+
+        // 处理荒唐触发暴躁（本次选项直接暴躁）
+        let showAnger = false;
+        if (isAngerTrigger && !state.angerFlag) {
+            showAnger = true;
+            state.angerFlag = true;
+        }
+        // 随机暴躁（5%概率且没触发过）
+        if (!state.angerFlag && !showAnger && Math.random() < 0.05) {
+            showAnger = true;
+            state.angerFlag = true;
+        }
+
+        state.step++;
+        if (showAnger) {
+            const randomAnger = ANGER_TEXTS[Math.floor(Math.random() * ANGER_TEXTS.length)];
+            showAngerModal(randomAnger, () => {
+                renderQuestion();
+            });
+        } else {
+            renderQuestion();
+        }
+    }
+
+    function showAngerModal(text, callback) {
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'anger-modal';
+        modalDiv.innerHTML = `
+            <div class="anger-card">
+                <div style="font-size:3rem;">🤯</div>
+                <div class="anger-text">${text}</div>
+                <button class="btn-reset" style="background:#b32d00;" id="angerContinueBtn">继续作死</button>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+        document.getElementById('angerContinueBtn').onclick = () => {
+            modalDiv.remove();
+            if (callback) callback();
+        };
+    }
+
+    function finishTest() {
+        // 计算基础人格类型
+        let cd = state.scores.C >= state.scores.D ? 'C' : 'D';
+        let fx = state.scores.F >= state.scores.X ? 'F' : 'X';
+        let oh = state.scores.O >= state.scores.H ? 'O' : 'H';
+        let rl = state.scores.R >= state.scores.L ? 'R' : 'L';
+        let baseKey = cd+fx+oh+rl;
+        const persona = PERSONA_MAP[baseKey] || PERSONA_MAP["DFHL"];
+        // 根据幸运值决定幸运版还是霉运版（阈值0以上为幸运，<=0为霉运，并且如果触发了暴躁强制霉运）
+        let isLuck = (state.luckScore > 0) && !state.angerFlag;
+        if(state.angerFlag) isLuck = false;
+        const finalJudgment = isLuck ? persona.luck : persona.unluck;
+        const titleSuffix = isLuck ? "✨ 幸运版 ✨" : "☠️ 霉运版 ☠️";
+        
+        // 生成结果HTML
+        const container = document.getElementById("mainContent");
+        container.innerHTML = `
+            <div class="result-area">
+                <div class="badge">🎭 你的恋爱人格</div>
+                <div class="personality-title">${persona.name}</div>
+                <div class="judgment">${finalJudgment}</div>
+                <div style="font-size:0.9rem; background:#f2e2ca; border-radius:20px; padding:8px; margin:10px 0;">
+                    霉运值: ${state.luckScore} | 暴躁触发: ${state.angerFlag ? '是⚠️' : '否'}
+                </div>
+                <div class="guide">
+                    📢 关注公众号「单身自救研究所」<br>
+                    回复【脱单】领取《反PUA话术+沙雕表情包》
+                </div>
+                <button class="btn-reset" id="resetBtn">重新测试</button>
+                <div class="share-tip">💡 点击右上角分享给朋友，看看谁是终极摆烂王</div>
+            </div>
+        `;
+        document.getElementById('resetBtn')?.addEventListener('click', () => {
+            initGame();
+        });
+    }
+
+    // 启动
+    initGame();
+</script>
+</body>
+</html>
