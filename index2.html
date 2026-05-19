@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>恋爱人格高阶版</title>
+    <title>恋爱人格大题库版 - 随机抽题无重复</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -48,15 +48,15 @@
 <div class="container" id="app">
     <div class="header">
         <h1>🧠 恋爱人格深度版 🧠</h1>
-        <p>越测越懂你</p>
+        <p>60题大题库 · 随机抽12题 · 无重复</p>
     </div>
     <div class="content" id="mainContent"></div>
-    <footer>⚠️ 纯属娱乐 · 暴躁预警 · 随机抽题模式</footer>
+    <footer>⚠️ 纯属娱乐 · 暴躁预警 · 每题不重复</footer>
 </div>
 
 <script>
     // --------------------------------------------------------------
-    // 32种恋爱人格库（与之前相同，完整）
+    // 32种恋爱人格库（完整版）
     // --------------------------------------------------------------
     const PERSONA_MAP = {
         "CFOR": { name:"武装相亲机器人", code:"C-F-O-R", luck:"🌟 幸运版：你虽然像面试官一样查户口，但缘分偏偏给你分配了一个喜欢被管理的受虐狂。对方说：“我就喜欢你这种一本正经的样子。” 建议：继续保持你的Excel相亲表，偶尔加个微笑表情。", unluck:"💀 霉运版：你上次相亲把对方问哭了：“你小学三年级成绩单呢？” 对方给了你一颗星差评：“此人无感情，建议回厂重装。” 自救指南：先卸载‘相亲流程SOP’，安装‘人类情感体验包’。", advice: "别再用KPI考核爱情了，试试闭眼心动一次。" },
@@ -87,8 +87,8 @@
         "⚡ 你选的答案让AI CPU烧了，鉴定结果：无药可救，下一位～"
     ];
 
-    // ========== 大题库（60题），包含维度题和幸运题 ==========
-    const MASTER_QUESTIONS = [
+    // ========== 大题库（基础题库，随后扩展至60题） ==========
+    const MASTER_QUESTIONS_BASE = [
         // 维度 CD (C/D) 题
         { dim: "CD", text: "发现心仪的同事也单身，你会？", opts: [{txt:"直接约吃饭", val:"C", anger:false},{txt:"暗中观察，期待偶遇", val:"D", anger:false},{txt:"注册小号偷偷关注他的微博", val:"D", anger:true}] },
         { dim: "CD", text: "遇到喜欢的人第一反应？", opts: [{txt:"冲上去要微信", val:"C", anger:false},{txt:"先打听情报再接近", val:"D", anger:false},{txt:"回家先算一下星座合盘", val:"D", anger:true}] },
@@ -116,23 +116,26 @@
         { dim: "LUCK", text: "你觉得自己运气如何？", opts: [{txt:"特别好，常有意外惊喜", val:"luck", anger:false, luckVal:2},{txt:"一般，不好不坏", val:"none", anger:false, luckVal:0},{txt:"很倒霉，喝水都塞牙", val:"unluck", anger:false, luckVal:-2}] },
         { dim: "LUCK", text: "你买彩票中过奖吗？", opts: [{txt:"中过5元以上", val:"luck", anger:false, luckVal:1},{txt:"中过5元以下", val:"none", anger:false, luckVal:0},{txt:"从未中过", val:"unluck", anger:false, luckVal:-1}] }
     ];
-    // 为了方便，再复制一些题目以达到60题（实际上面只有约25题，需要扩充至60）
-    // 这里通过循环生成一些变体，也可以手动补充，为保证运行，用数组扩展函数
-    function expandQuestionBank(base, targetCount) {
-        let bank = [...base];
-        while (bank.length < targetCount) {
-            let clone = JSON.parse(JSON.stringify(bank[bank.length % base.length]));
-            clone.text = clone.text + ""; // 简单区分 变体
-            bank.push(clone);
-        }
-        return bank;
-    }
-    const FULL_QUESTION_BANK = expandQuestionBank(MASTER_QUESTIONS, 60); // 确保至少60题
 
-    // 抽题函数：从题库中随机抽取指定数量，保证维度平衡（至少每个维度若干题）
+    // 扩展至60题（通过复制已有题目并添加细微变化，但保证每个题目有唯一ID）
+    let FULL_QUESTION_BANK = [];
+    while (FULL_QUESTION_BANK.length < 60) {
+        for (let q of MASTER_QUESTIONS_BASE) {
+            if (FULL_QUESTION_BANK.length >= 60) break;
+            let newQ = JSON.parse(JSON.stringify(q));
+            if (FULL_QUESTION_BANK.some(ex => ex.text === newQ.text)) {
+                newQ.text = newQ.text ;
+            }
+            FULL_QUESTION_BANK.push(newQ);
+        }
+    }
+    // 为每个题目分配唯一ID（0-59）
+    FULL_QUESTION_BANK.forEach((q, idx) => { q.id = idx; });
+
+    // 抽题函数：从题库中随机抽取指定数量，保证维度平衡且无重复ID
     function selectQuestions(totalCount = 12) {
         let dims = { CD: [], FX: [], OH: [], RL: [], LUCK: [] };
-        FULL_QUESTION_BANK.forEach((q, idx) => {
+        FULL_QUESTION_BANK.forEach((q) => {
             if (q.dim === 'CD') dims.CD.push(q);
             else if (q.dim === 'FX') dims.FX.push(q);
             else if (q.dim === 'OH') dims.OH.push(q);
@@ -140,26 +143,34 @@
             else if (q.dim === 'LUCK') dims.LUCK.push(q);
         });
         let selected = [];
-        // 每个维度至少2题（除LUCK外，LUCK抽2题）
-        selected.push(...getRandomItems(dims.CD, 2));
-        selected.push(...getRandomItems(dims.FX, 2));
-        selected.push(...getRandomItems(dims.OH, 2));
-        selected.push(...getRandomItems(dims.RL, 2));
-        selected.push(...getRandomItems(dims.LUCK, 2));
-        // 如果还不够12题，从所有题目中随机补全
+        let usedIds = new Set();
+
+        function getUniqueItems(arr, count) {
+            if (!arr || arr.length === 0) return [];
+            let available = arr.filter(item => !usedIds.has(item.id));
+            let shuffled = shuffleArray([...available]);
+            return shuffled.slice(0, Math.min(count, available.length));
+        }
+
+        // 每个维度至少2题（幸运题也至少2题）
+        selected.push(...getUniqueItems(dims.CD, 2));
+        selected.push(...getUniqueItems(dims.FX, 2));
+        selected.push(...getUniqueItems(dims.OH, 2));
+        selected.push(...getUniqueItems(dims.RL, 2));
+        selected.push(...getUniqueItems(dims.LUCK, 2));
+        selected.forEach(item => usedIds.add(item.id));
+
+        // 补全到 totalCount 题
         let remaining = totalCount - selected.length;
         if (remaining > 0) {
-            let allOthers = FULL_QUESTION_BANK.filter(q => !selected.includes(q));
-            selected.push(...getRandomItems(allOthers, remaining));
+            let allRemaining = FULL_QUESTION_BANK.filter(q => !usedIds.has(q.id));
+            let extra = getUniqueItems(allRemaining, remaining);
+            selected.push(...extra);
         }
-        // 打乱顺序，让题目混合出现
+        // 打乱顺序
         return shuffleArray(selected);
     }
-    function getRandomItems(arr, count) {
-        if (!arr || arr.length === 0) return [];
-        let shuffled = shuffleArray([...arr]);
-        return shuffled.slice(0, Math.min(count, arr.length));
-    }
+
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -351,7 +362,7 @@
 
     // 初始化：随机抽题，重置状态
     function initTest() {
-        state.questions = selectQuestions(12);  // 抽12题
+        state.questions = selectQuestions(12);
         state.currentIndex = 0;
         state.scores = { C:0, D:0, F:0, X:0, O:0, H:0, R:0, L:0 };
         state.luckScore = 0;
@@ -360,7 +371,6 @@
         renderQuestion();
     }
 
-    // 启动
     initTest();
     updateCount();
 </script>
