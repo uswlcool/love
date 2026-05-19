@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>恋爱人格大题库版 - 随机抽题无重复</title>
+    <title>恋爱人格MAX版</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -48,15 +48,15 @@
 <div class="container" id="app">
     <div class="header">
         <h1>🧠 恋爱人格深度版 🧠</h1>
-        <p>越测越了解你V1.0</p>
+        <p>越测越懂你</p>
     </div>
     <div class="content" id="mainContent"></div>
-    <footer>⚠️ 纯属娱乐 · 暴躁预警 </footer>
+    <footer>⚠️ 纯属娱乐 · 暴躁预警</footer>
 </div>
 
 <script>
     // --------------------------------------------------------------
-    // 32种恋爱人格库（完整版）
+    // 32种恋爱人格库（完整版，与之前相同）
     // --------------------------------------------------------------
     const PERSONA_MAP = {
         "CFOR": { name:"武装相亲机器人", code:"C-F-O-R", luck:"🌟 幸运版：你虽然像面试官一样查户口，但缘分偏偏给你分配了一个喜欢被管理的受虐狂。对方说：“我就喜欢你这种一本正经的样子。” 建议：继续保持你的Excel相亲表，偶尔加个微笑表情。", unluck:"💀 霉运版：你上次相亲把对方问哭了：“你小学三年级成绩单呢？” 对方给了你一颗星差评：“此人无感情，建议回厂重装。” 自救指南：先卸载‘相亲流程SOP’，安装‘人类情感体验包’。", advice: "别再用KPI考核爱情了，试试闭眼心动一次。" },
@@ -77,7 +77,6 @@
         "DXHL": { name:"终极摆烂王", code:"D-X-H-L", luck:"🌟 幸运版：AI都懒得分析你，因为你是天选锦鲤，躺着也能脱单。对方说：“我喜欢你这种懒懒的气质。” 你回复：“那你去给我倒杯水。” 对方居然去了。", unluck:"💀 霉运版：AI分析结果：无药可救。但你不在乎，因为你在摆烂中。某天你饿死在出租屋，最后一条动态：“外卖都不愿给我送，爱情算什么？”", advice: "摆烂可以，但记得点外卖。" }
     };
 
-    // 暴躁文案库
     const ANGER_TEXTS = [
         "🤬 你确定你是在找对象，不是在招一个全天候保姆？系统建议你下载一个‘孤寡青蛙’App。",
         "🤯 检测到你的择偶标准包含：肤白貌美/年入百万/会修电脑/热爱小动物/父母双亡——这种人只存在于你的梦里。",
@@ -87,83 +86,107 @@
         "⚡ 你选的答案让AI CPU烧了，鉴定结果：无药可救，下一位～"
     ];
 
-    // ========== 大题库（基础题库，随后扩展至60题） ==========
-    const MASTER_QUESTIONS_BASE = [
-        // 维度 CD (C/D) 题
-        { dim: "CD", text: "发现心仪的同事也单身，你会？", opts: [{txt:"直接约吃饭", val:"C", anger:false},{txt:"暗中观察，期待偶遇", val:"D", anger:false},{txt:"注册小号偷偷关注他的微博", val:"D", anger:true}] },
-        { dim: "CD", text: "遇到喜欢的人第一反应？", opts: [{txt:"冲上去要微信", val:"C", anger:false},{txt:"先打听情报再接近", val:"D", anger:false},{txt:"回家先算一下星座合盘", val:"D", anger:true}] },
-        { dim: "CD", text: "在社交聚会上，你通常？", opts: [{txt:"主动结识新朋友", val:"C", anger:false},{txt:"等别人来找你聊天", val:"D", anger:false},{txt:"躲在角落玩手机", val:"D", anger:true}] },
-        { dim: "CD", text: "你更愿意如何开始一段关系？", opts: [{txt:"主动表白", val:"C", anger:false},{txt:"暗示对方，等对方开口", val:"D", anger:false},{txt:"发朋友圈暗示，看对方反应", val:"D", anger:true}] },
-        // 维度 FX (F/X)
-        { dim: "FX", text: "你认为感情长久最取决于？", opts: [{txt:"三观/经济/家庭背景", val:"F", anger:false},{txt:"星座/血型/生辰八字", val:"X", anger:false},{txt:"对方会不会做酸菜鱼", val:"X", anger:true}] },
-        { dim: "FX", text: "约会地点你会选？", opts: [{txt:"评分4.8以上的餐厅", val:"F", anger:false},{txt:"塔罗牌推荐的咖啡馆", val:"X", anger:false},{txt:"我家，我下面给你吃", val:"X", anger:true}] },
-        { dim: "FX", text: "你相信命中注定吗？", opts: [{txt:"不信，事在人为", val:"F", anger:false},{txt:"信，一切都是最好的安排", val:"X", anger:false},{txt:"我只信钱", val:"F", anger:true}] },
-        { dim: "FX", text: "你会因为对方的什么特质而忽略其他缺点？", opts: [{txt:"高收入/好工作", val:"F", anger:false},{txt:"星座超合拍", val:"X", anger:false},{txt:"长得像我前任", val:"X", anger:true}] },
-        // 维度 OH (O/H)
-        { dim: "OH", text: "吵架后你通常会？", opts: [{txt:"冷静分析对错，提出方案", val:"O", anger:false},{txt:"哭诉'你不爱我了'，拉黑", val:"H", anger:false},{txt:"发仅对方可见的朋友圈配阴天", val:"H", anger:true}] },
-        { dim: "OH", text: "收到礼物不喜欢，你会？", opts: [{txt:"直接说谢谢，但不用", val:"O", anger:false},{txt:"感动到哭，夸他用心", val:"H", anger:false},{txt:"发朋友圈吐槽直男审美", val:"H", anger:true}] },
-        { dim: "OH", text: "对方生病时，你通常？", opts: [{txt:"查资料、买药、叮嘱", val:"O", anger:false},{txt:"陪着一起哭，然后点外卖", val:"H", anger:false},{txt:"发个红包，说多喝热水", val:"O", anger:true}] },
-        { dim: "OH", text: "你如何看待情绪表达？", opts: [{txt:"理性沟通最重要", val:"O", anger:false},{txt:"情绪需要释放，可以哭闹", val:"H", anger:false},{txt:"憋着，然后冷战", val:"H", anger:true}] },
-        // 维度 RL (R/L)
-        { dim: "RL", text: "计划一次浪漫旅行，你会？", opts: [{txt:"提前三月订票做Excel攻略", val:"R", anger:false},{txt:"周五下班说'周末去海边吧'", val:"L", anger:false},{txt:"旅行？我在家看旅游频道就好", val:"L", anger:true}] },
-        { dim: "RL", text: "周末约会安排？", opts: [{txt:"提前两天确认时间地点", val:"R", anger:false},{txt:"当天随性出发", val:"L", anger:false},{txt:"宅家打游戏，说下次一定", val:"L", anger:true}] },
-        { dim: "RL", text: "你的人生信条是？", opts: [{txt:"凡事预则立", val:"R", anger:false},{txt:"船到桥头自然直", val:"L", anger:false},{txt:"躺平，反正都一样", val:"L", anger:true}] },
-        { dim: "RL", text: "你如何看待迟到？", opts: [{txt:"无法容忍，必须准时", val:"R", anger:false},{txt:"可以接受，但别太久", val:"L", anger:false},{txt:"我经常迟到，对方要包容", val:"L", anger:true}] },
-        // 幸运值题（LUCK）
-        { dim: "LUCK", text: "你曾经捡到过钱吗？", opts: [{txt:"捡过，还给了失主", val:"luck", anger:false, luckVal:1},{txt:"捡过，自己花了", val:"none", anger:false, luckVal:0},{txt:"丢过钱，从没捡到", val:"unluck", anger:false, luckVal:-2}] },
-        { dim: "LUCK", text: "抽卡/抽奖的手气？", opts: [{txt:"经常出SSR", val:"luck", anger:false, luckVal:2},{txt:"一般般", val:"none", anger:false, luckVal:0},{txt:"非酋本酋", val:"unluck", anger:false, luckVal:-2}] },
-        { dim: "LUCK", text: "你遇到过最离谱的约会事故？", opts: [{txt:"从没遇到过", val:"luck", anger:false, luckVal:1},{txt:"对方放鸽子", val:"unluck", anger:false, luckVal:-1},{txt:"对方带着现男友来赴约", val:"unluck", anger:true, luckVal:-3}] },
-        { dim: "LUCK", text: "你觉得自己运气如何？", opts: [{txt:"特别好，常有意外惊喜", val:"luck", anger:false, luckVal:2},{txt:"一般，不好不坏", val:"none", anger:false, luckVal:0},{txt:"很倒霉，喝水都塞牙", val:"unluck", anger:false, luckVal:-2}] },
-        { dim: "LUCK", text: "你买彩票中过奖吗？", opts: [{txt:"中过5元以上", val:"luck", anger:false, luckVal:1},{txt:"中过5元以下", val:"none", anger:false, luckVal:0},{txt:"从未中过", val:"unluck", anger:false, luckVal:-1}] }
+    // --------------------------------------------------------------
+    // 50道精心编写的题目（每个维度约10题，幸运题6题）
+    // --------------------------------------------------------------
+    const FULL_QUESTION_BANK = [
+        // CD 维度 (出击/蹲守) 共12题
+        { dim: "CD", text: "看到喜欢的类型，你第一反应是？", opts: [{txt:"主动上前搭讪", val:"C", anger:false},{txt:"等着对方注意到我", val:"D", anger:false},{txt:"偷偷拍张照再说", val:"D", anger:true}] },
+        { dim: "CD", text: "朋友组织单身派对，你会？", opts: [{txt:"积极报名，主动社交", val:"C", anger:false},{txt:"不太想去，除非有人拉", val:"D", anger:false},{txt:"去了也只和熟人玩", val:"D", anger:true}] },
+        { dim: "CD", text: "遇到心动的陌生人，你会？", opts: [{txt:"想办法要到联系方式", val:"C", anger:false},{txt:"心里默默祈祷有缘再见", val:"D", anger:false},{txt:"回家后疯狂搜索社交账号", val:"D", anger:true}] },
+        { dim: "CD", text: "你更相信哪种恋爱模式？", opts: [{txt:"男/女追女/男，隔层纱", val:"C", anger:false},{txt:"缘分到了自然成", val:"D", anger:false},{txt:"网恋，先看照片", val:"D", anger:true}] },
+        { dim: "CD", text: "在婚恋APP上，你会？", opts: [{txt:"主动给心仪的人发消息", val:"C", anger:false},{txt:"等人来喜欢我", val:"D", anger:false},{txt:"只点赞不聊天", val:"D", anger:true}] },
+        { dim: "CD", text: "你如何对待暗恋？", opts: [{txt:"找机会表白", val:"C", anger:false},{txt:"藏在心里，慢慢淡忘", val:"D", anger:false},{txt:"写日记幻想", val:"D", anger:true}] },
+        { dim: "CD", text: "你觉得主动追求会被看轻吗？", opts: [{txt:"不会，喜欢就要争取", val:"C", anger:false},{txt:"会，还是等对方主动", val:"D", anger:false},{txt:"看对方身价决定", val:"D", anger:true}] },
+        { dim: "CD", text: "你愿意为了爱情换城市吗？", opts: [{txt:"愿意，真爱至上", val:"C", anger:false},{txt:"不太可能，太冒险", val:"D", anger:false},{txt:"先让对方换过来", val:"D", anger:true}] },
+        { dim: "CD", text: "你更擅长哪种？", opts: [{txt:"开启一段对话", val:"C", anger:false},{txt:"维持一段关系", val:"D", anger:false},{txt:"结束一段关系", val:"D", anger:true}] },
+        { dim: "CD", text: "你如何看待“欲擒故纵”？", opts: [{txt:"无聊，喜欢就直接点", val:"C", anger:false},{txt:"有效策略，值得学习", val:"D", anger:false},{txt:"只会这招", val:"D", anger:true}] },
+        { dim: "CD", text: "你的朋友圈封面是？", opts: [{txt:"自己的精修照", val:"C", anger:false},{txt:"风景或猫狗", val:"D", anger:false},{txt:"空白", val:"D", anger:true}] },
+        { dim: "CD", text: "你更享受哪种过程？", opts: [{txt:"追求别人的刺激", val:"C", anger:false},{txt:"被人追求的甜蜜", val:"D", anger:false},{txt:"暧昧不清的拉扯", val:"D", anger:true}] },
+        // FX 维度 (现实/玄学) 共12题
+        { dim: "FX", text: "你选择伴侣时，最看重？", opts: [{txt:"经济条件和家庭背景", val:"F", anger:false},{txt:"星座匹配度", val:"X", anger:false},{txt:"身高长相", val:"F", anger:true}] },
+        { dim: "FX", text: "你相信算命/占卜对感情的指导吗？", opts: [{txt:"不信，只信自己", val:"F", anger:false},{txt:"信，经常参考", val:"X", anger:false},{txt:"偶尔玩玩，不当真", val:"X", anger:true}] },
+        { dim: "FX", text: "你如何决定是否与一个人交往？", opts: [{txt:"列出优缺点清单", val:"F", anger:false},{txt:"跟着感觉走", val:"X", anger:false},{txt:"问朋友/家人意见", val:"F", anger:true}] },
+        { dim: "FX", text: "你更相信哪种说法？", opts: [{txt:"门当户对", val:"F", anger:false},{txt:"有缘千里来相会", val:"X", anger:false},{txt:"爱情是盲目的", val:"X", anger:true}] },
+        { dim: "FX", text: "你对婚前财产公证怎么看？", opts: [{txt:"必要，保护自己", val:"F", anger:false},{txt:"伤感情，没必要", val:"X", anger:false},{txt:"看对方要求", val:"F", anger:true}] },
+        { dim: "FX", text: "你会在意对方的血型/生肖吗？", opts: [{txt:"完全不在意", val:"F", anger:false},{txt:"有点在意，会查一下", val:"X", anger:false},{txt:"非常在意，不合不考虑", val:"X", anger:true}] },
+        { dim: "FX", text: "你如何看待“爱情饮水饱”？", opts: [{txt:"太天真，没有面包不行", val:"F", anger:false},{txt:"浪漫，感情最重要", val:"X", anger:false},{txt:"看阶段", val:"F", anger:true}] },
+        { dim: "FX", text: "你更愿意和哪种人结婚？", opts: [{txt:"有稳定工作的普通人", val:"F", anger:false},{txt:"让你有强烈心动的", val:"X", anger:false},{txt:"富二代", val:"F", anger:true}] },
+        { dim: "FX", text: "你会因为对方属相不合而分手吗？", opts: [{txt:"不会，太荒谬", val:"F", anger:false},{txt:"会，长辈很在意", val:"X", anger:false},{txt:"纠结", val:"X", anger:true}] },
+        { dim: "FX", text: "你认为恋爱中仪式感重要吗？", opts: [{txt:"重要，节日礼物不能少", val:"F", anger:false},{txt:"无所谓，心意在就好", val:"X", anger:false},{txt:"烦，都是消费主义", val:"F", anger:true}] },
+        { dim: "FX", text: "你更相信哪种爱情测试？", opts: [{txt:"科学心理测试", val:"F", anger:false},{txt:"塔罗牌占卜", val:"X", anger:false},{txt:"都不信", val:"F", anger:true}] },
+        { dim: "FX", text: "你如何评价“拜金”？", opts: [{txt:"现实，无可厚非", val:"F", anger:false},{txt:"庸俗，真爱无价", val:"X", anger:false},{txt:"看程度", val:"F", anger:true}] },
+        // OH 维度 (钢铁/戏精) 共12题
+        { dim: "OH", text: "你和伴侣吵架后，通常会？", opts: [{txt:"理性分析问题", val:"O", anger:false},{txt:"大哭或摔东西", val:"H", anger:false},{txt:"冷战到对方认错", val:"H", anger:true}] },
+        { dim: "OH", text: "你更擅长哪种表达爱的方式？", opts: [{txt:"实际行动（做饭/修理）", val:"O", anger:false},{txt:"甜言蜜语", val:"H", anger:false},{txt:"送礼物", val:"O", anger:true}] },
+        { dim: "OH", text: "看到前任的动态，你会？", opts: [{txt:"毫无波澜，划走", val:"O", anger:false},{txt:"情绪波动，想半天", val:"H", anger:false},{txt:"截图发给朋友吐槽", val:"H", anger:true}] },
+        { dim: "OH", text: "你如何向伴侣表达不满？", opts: [{txt:"直接说出原因", val:"O", anger:false},{txt:"用冷漠暗示", val:"H", anger:false},{txt:"发朋友圈指桑骂槐", val:"H", anger:true}] },
+        { dim: "OH", text: "你觉得“情绪价值”重要吗？", opts: [{txt:"重要，但理性沟通更重要", val:"O", anger:false},{txt:"非常重要，甚至高于物质", val:"H", anger:false},{txt:"不懂，能吃吗", val:"O", anger:true}] },
+        { dim: "OH", text: "你会因为感动而接受一个人吗？", opts: [{txt:"不会，感动不是爱", val:"O", anger:false},{txt:"会，日久生情", val:"H", anger:false},{txt:"看对方付出的程度", val:"H", anger:true}] },
+        { dim: "OH", text: "你如何看待“作”？", opts: [{txt:"愚蠢，消耗感情", val:"O", anger:false},{txt:"可爱，证明在乎", val:"H", anger:false},{txt:"适度可以", val:"H", anger:true}] },
+        { dim: "OH", text: "你更愿意看哪种电影？", opts: [{txt:"逻辑严密的悬疑片", val:"O", anger:false},{txt:"催泪爱情片", val:"H", anger:false},{txt:"无脑喜剧", val:"O", anger:true}] },
+        { dim: "OH", text: "你如何庆祝纪念日？", opts: [{txt:"提前计划，准备礼物", val:"O", anger:false},{txt:"当天即兴发挥", val:"H", anger:false},{txt:"忘记，等对方提醒", val:"H", anger:true}] },
+        { dim: "OH", text: "你更怕哪种情况？", opts: [{txt:"对方不讲道理", val:"O", anger:false},{txt:"对方冷漠无情", val:"H", anger:false},{txt:"对方过于粘人", val:"O", anger:true}] },
+        { dim: "OH", text: "你会在社交平台秀恩爱吗？", opts: [{txt:"很少，隐私重要", val:"O", anger:false},{txt:"经常，记录美好", val:"H", anger:false},{txt:"分手后删光", val:"H", anger:true}] },
+        { dim: "OH", text: "你如何评价自己的情商？", opts: [{txt:"理性，有时伤感情", val:"O", anger:false},{txt:"感性，容易受伤", val:"H", anger:false},{txt:"忽高忽低", val:"H", anger:true}] },
+        // RL 维度 (计划/随缘) 共12题
+        { dim: "RL", text: "你如何安排约会？", opts: [{txt:"提前一周规划", val:"R", anger:false},{txt:"随性，想到哪去哪", val:"L", anger:false},{txt:"让对方安排", val:"L", anger:true}] },
+        { dim: "RL", text: "你的人生信条是？", opts: [{txt:"凡事预则立", val:"R", anger:false},{txt:"车到山前必有路", val:"L", anger:false},{txt:"走一步算一步", val:"L", anger:true}] },
+        { dim: "RL", text: "你如何看待婚前协议？", opts: [{txt:"必要，规避风险", val:"R", anger:false},{txt:"伤感情，没必要", val:"L", anger:false},{txt:"无所谓", val:"L", anger:true}] },
+        { dim: "RL", text: "你更适应哪种工作环境？", opts: [{txt:"流程明确，按部就班", val:"R", anger:false},{txt:"自由灵活，任务制", val:"L", anger:false},{txt:"混乱但有挑战", val:"L", anger:true}] },
+        { dim: "RL", text: "你旅行的方式是？", opts: [{txt:"做详细攻略", val:"R", anger:false},{txt:"到了再说", val:"L", anger:false},{txt:"跟团游", val:"R", anger:true}] },
+        { dim: "RL", text: "你对待储蓄的态度？", opts: [{txt:"每月定存，有规划", val:"R", anger:false},{txt:"有钱就花，不留", val:"L", anger:false},{txt:"看心情", val:"L", anger:true}] },
+        { dim: "RL", text: "你如何应对突发事件？", opts: [{txt:"找备用方案", val:"R", anger:false},{txt:"随机应变", val:"L", anger:false},{txt:"崩溃", val:"L", anger:true}] },
+        { dim: "RL", text: "你更相信哪种成功学？", opts: [{txt:"制定目标，分步完成", val:"R", anger:false},{txt:"抓住机遇，顺势而为", val:"L", anger:false},{txt:"靠运气", val:"L", anger:true}] },
+        { dim: "RL", text: "你会为了未来牺牲现在吗？", opts: [{txt:"会，延迟满足", val:"R", anger:false},{txt:"不会，活在当下", val:"L", anger:false},{txt:"看情况", val:"L", anger:true}] },
+        { dim: "RL", text: "你更喜欢哪种周末？", opts: [{txt:"排满活动", val:"R", anger:false},{txt:"完全放空", val:"L", anger:false},{txt:"宅家刷剧", val:"L", anger:true}] },
+        { dim: "RL", text: "你如何选择餐厅？", opts: [{txt:"看评分和评价", val:"R", anger:false},{txt:"路过觉得不错就进", val:"L", anger:false},{txt:"朋友推荐", val:"R", anger:true}] },
+        { dim: "RL", text: "你对自己的五年后有规划吗？", opts: [{txt:"有清晰的蓝图", val:"R", anger:false},{txt:"走一步看一步", val:"L", anger:false},{txt:"没想过", val:"L", anger:true}] },
+        // LUCK 维度 共6题（幸运值测量）
+        { dim: "LUCK", text: "你觉得自己运气好吗？", opts: [{txt:"特别好，常有惊喜", val:"luck", anger:false, luckVal:2},{txt:"一般，不好不坏", val:"none", anger:false, luckVal:0},{txt:"很背，总是倒霉", val:"unluck", anger:false, luckVal:-2}] },
+        { dim: "LUCK", text: "你中过最大的奖是多少？", opts: [{txt:"超过500元", val:"luck", anger:false, luckVal:2},{txt:"5-500元", val:"none", anger:false, luckVal:0},{txt:"从未中奖", val:"unluck", anger:false, luckVal:-1}] },
+        { dim: "LUCK", text: "你相信“吸引力法则”吗？", opts: [{txt:"相信，我正努力吸引好事", val:"luck", anger:false, luckVal:1},{txt:"半信半疑", val:"none", anger:false, luckVal:0},{txt:"不信，纯属玄学", val:"unluck", anger:false, luckVal:-1}] },
+        { dim: "LUCK", text: "你丢失重要物品的频率？", opts: [{txt:"很少，很细心", val:"luck", anger:false, luckVal:1},{txt:"偶尔", val:"none", anger:false, luckVal:0},{txt:"经常，马大哈", val:"unluck", anger:false, luckVal:-2}] },
+        { dim: "LUCK", text: "你买彩票的心态是？", opts: [{txt:"玩玩，不指望", val:"none", anger:false, luckVal:0},{txt:"觉得能中大奖", val:"luck", anger:false, luckVal:1},{txt:"从来不买", val:"none", anger:false, luckVal:0}] },
+        { dim: "LUCK", text: "你约会时遇到过倒霉事吗？", opts: [{txt:"从未", val:"luck", anger:false, luckVal:1},{txt:"偶尔，但不严重", val:"none", anger:false, luckVal:0},{txt:"经常，比如下雨、丢手机", val:"unluck", anger:false, luckVal:-2}] }
     ];
 
-    // 扩展至60题（通过复制已有题目并添加细微变化，但保证每个题目有唯一ID）
-    let FULL_QUESTION_BANK = [];
-    while (FULL_QUESTION_BANK.length < 60) {
-        for (let q of MASTER_QUESTIONS_BASE) {
-            if (FULL_QUESTION_BANK.length >= 60) break;
-            let newQ = JSON.parse(JSON.stringify(q));
-            if (FULL_QUESTION_BANK.some(ex => ex.text === newQ.text)) {
-                newQ.text = newQ.text ;
-            }
-            FULL_QUESTION_BANK.push(newQ);
-        }
-    }
-    // 为每个题目分配唯一ID（0-59）
-    FULL_QUESTION_BANK.forEach((q, idx) => { q.id = idx; });
-
-    // 抽题函数：从题库中随机抽取指定数量，保证维度平衡且无重复ID
+    // 抽题函数：从50题中随机抽取12题，保证每个维度至少2题（CD, FX, OH, RL, LUCK各至少2）
     function selectQuestions(totalCount = 12) {
         let dims = { CD: [], FX: [], OH: [], RL: [], LUCK: [] };
         FULL_QUESTION_BANK.forEach((q) => {
-            if (q.dim === 'CD') dims.CD.push(q);
-            else if (q.dim === 'FX') dims.FX.push(q);
-            else if (q.dim === 'OH') dims.OH.push(q);
-            else if (q.dim === 'RL') dims.RL.push(q);
-            else if (q.dim === 'LUCK') dims.LUCK.push(q);
+            dims[q.dim].push(q);
         });
         let selected = [];
-        let usedIds = new Set();
+        let usedIndices = new Set();
 
         function getUniqueItems(arr, count) {
             if (!arr || arr.length === 0) return [];
-            let available = arr.filter(item => !usedIds.has(item.id));
+            let available = arr.filter((item) => {
+                // 找到该题目在 FULL_QUESTION_BANK 中的索引
+                let idx = FULL_QUESTION_BANK.findIndex(q => q === item);
+                return !usedIndices.has(idx);
+            });
             let shuffled = shuffleArray([...available]);
             return shuffled.slice(0, Math.min(count, available.length));
         }
 
-        // 每个维度至少2题（幸运题也至少2题）
+        // 每个维度至少2题
         selected.push(...getUniqueItems(dims.CD, 2));
         selected.push(...getUniqueItems(dims.FX, 2));
         selected.push(...getUniqueItems(dims.OH, 2));
         selected.push(...getUniqueItems(dims.RL, 2));
         selected.push(...getUniqueItems(dims.LUCK, 2));
-        selected.forEach(item => usedIds.add(item.id));
+        // 标记已选
+        selected.forEach(item => {
+            let idx = FULL_QUESTION_BANK.findIndex(q => q === item);
+            usedIndices.add(idx);
+        });
 
         // 补全到 totalCount 题
         let remaining = totalCount - selected.length;
         if (remaining > 0) {
-            let allRemaining = FULL_QUESTION_BANK.filter(q => !usedIds.has(q.id));
+            let allRemaining = FULL_QUESTION_BANK.filter((_, idx) => !usedIndices.has(idx));
             let extra = getUniqueItems(allRemaining, remaining);
             selected.push(...extra);
         }
@@ -181,8 +204,8 @@
 
     // 全局状态
     let state = {
-        questions: [],       // 当前测试的题目列表（对象数组）
-        currentIndex: 0,    // 当前第几题（0开始）
+        questions: [],
+        currentIndex: 0,
         scores: { C:0, D:0, F:0, X:0, O:0, H:0, R:0, L:0 },
         luckScore: 0,
         angerFlag: false,
@@ -360,7 +383,6 @@
         }
     }
 
-    // 初始化：随机抽题，重置状态
     function initTest() {
         state.questions = selectQuestions(12);
         state.currentIndex = 0;
